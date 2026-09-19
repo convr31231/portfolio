@@ -1,0 +1,59 @@
+.final-cta {
+  padding-top: calc(var(--space-section) * 0.5);
+}
+
+.final-cta__box {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2.75rem, 6vw, 4.5rem);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(ellipse 80% 80% at 100% 0%, rgba(255, 255, 255, 0.12), transparent 50%),
+    linear-gradient(135deg, #0a5c5b 0%, #0e7c7b 45%, #125e5d 100%);
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme='dark'] .final-cta__box {
+  background:
+    radial-gradient(ellipse 80% 80% at 100% 0%, rgba(255, 255, 255, 0.08), transparent 50%),
+    linear-gradient(135deg, #0d3f3e 0%, #116866 50%, #0a4a48 100%);
+}
+
+.final-cta__content {
+  position: relative;
+  z-index: 1;
+  max-width: 36rem;
+}
+
+.final-cta__box h2 {
+  color: #fff;
+  margin-bottom: 0.85rem;
+}
+
+.final-cta__box p {
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 1.75rem;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+}
+
+.final-cta__box .btn--primary {
+  background: #fff;
+  color: #0a5c5b;
+}
+
+.final-cta__box .btn--primary:hover {
+  background: #f0fdfa;
+  color: #084746;
+}
+
+.final-cta__secondary {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+
+.final-cta__secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+  color: #fff;
+}

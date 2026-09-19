@@ -1,0 +1,32 @@
+.project-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--object-position, center center);
+}
+
+.project-image--fallback {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 1.25rem;
+  background: linear-gradient(
+    145deg,
+    var(--preview-accent, #0e7c7b) 0%,
+    color-mix(in srgb, var(--preview-accent, #0e7c7b) 50%, #0b0c0e) 100%
+  );
+}
+
+.project-image__fallback-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .project-image {
+    object-position: var(--object-position-mobile, center top);
+  }
+}

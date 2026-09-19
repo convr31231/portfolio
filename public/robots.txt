@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap подставляется автоматически при npm run build,
+# если задан SITE_URL в src/data/site.js
