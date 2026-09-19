@@ -1,17 +1,6 @@
 import { chromium } from 'playwright'
 
 const base = 'http://127.0.0.1:4173/portfolio/'
-const urls = [
-  base,
-  `${base}assets/`, // will 404 as dir - skip
-  `${base}projects/nova.webp`,
-  `${base}projects/mono.webp`,
-  `${base}projects/coffee.webp`,
-  `${base}projects/photo.webp`,
-  `${base}favicon.ico`,
-  `${base}favicon.svg`,
-  `${base}og-image.webp`,
-]
 
 const browser = await chromium.launch({ headless: true })
 const page = await browser.newPage()

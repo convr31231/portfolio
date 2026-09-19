@@ -2,45 +2,14 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { writeFileSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
-import {
-  SITE_NAME,
-  SITE_URL,
-  site,
-  isConfigured,
-  getSiteOrigin,
-} from './src/data/site.js'
+import { SITE_URL, isConfigured, getSiteOrigin } from './src/data/site.js'
 
 const BASE = '/portfolio/'
 
-function joinUrl(origin, assetPath) {
-  const originClean = String(origin || '').replace(/\/$/, '')
-  const pathClean = String(assetPath || '').replace(/^\//, '')
-  if (!originClean) return `${BASE}${pathClean}`
-  return `${originClean}/${pathClean}`
-}
-
-function seoPlugin() {
+/** Пишет robots.txt и sitemap.xml в dist на основе SITE_URL */
+function seoFilesPlugin() {
   return {
-    name: 'portfolio-seo',
-    transformIndexHtml(html) {
-      const origin = getSiteOrigin()
-      const title = site.seo.title
-      const description = site.seo.description
-      const ogImage = joinUrl(origin, site.seo.ogImage || 'og-image.webp')
-      const pageUrl = origin ? `${origin}/` : BASE
-
-      const canonicalTag = `<link rel="canonical" href="${pageUrl}" />`
-      const ogUrlTag = `<meta property="og:url" content="${pageUrl}" />`
-
-      return html
-        .replaceAll('%SITE_TITLE%', title)
-        .replaceAll('%SITE_DESCRIPTION%', description)
-        .replaceAll('%SITE_NAME%', SITE_NAME)
-        .replaceAll('%OG_IMAGE%', ogImage)
-        .replaceAll('%BASE_URL%', BASE)
-        .replace('%CANONICAL%', canonicalTag)
-        .replace('%OG_URL%', ogUrlTag)
-    },
+    name: 'portfolio-seo-files',
     closeBundle() {
       const origin = getSiteOrigin()
       const dist = path.resolve('dist')
@@ -73,6 +42,6 @@ function seoPlugin() {
 }
 
 export default defineConfig({
-  plugins: [react(), seoPlugin()],
+  plugins: [react(), seoFilesPlugin()],
   base: BASE,
 })
