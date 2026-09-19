@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Сайт для автосервиса за 72 часа | Иван</title>
+    <meta
+      name="description"
+      content="Сайт под ключ для автосервиса, детейлинга, кузовного ремонта, шиномонтажа и автомойки. Услуги, цены, работы и запись — 50 000 ₽, срок до 72 часов."
+    />
+    <meta name="theme-color" content="#0e7c7b" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://convr31231.github.io/portfolio/auto/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content="Иван" />
+    <meta property="og:url" content="https://convr31231.github.io/portfolio/auto/" />
+    <meta
+      property="og:title"
+      content="Сайт для автосервиса за 72 часа | Иван"
+    />
+    <meta
+      property="og:description"
+      content="Сайт под ключ для автосервиса, детейлинга, кузовного ремонта, шиномонтажа и автомойки. Услуги, цены, работы и запись — 50 000 ₽, срок до 72 часов."
+    />
+    <meta
+      property="og:image"
+      content="https://convr31231.github.io/portfolio/og-image.webp"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Сайт для автосервиса за 72 часа | Иван"
+    />
+    <meta
+      name="twitter:description"
+      content="Сайт под ключ для автосервиса, детейлинга, кузовного ремонта, шиномонтажа и автомойки. Услуги, цены, работы и запись — 50 000 ₽, срок до 72 часов."
+    />
+    <meta
+      name="twitter:image"
+      content="https://convr31231.github.io/portfolio/og-image.webp"
+    />
+
+    <link rel="icon" href="/portfolio/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/portfolio/favicon.svg" />
+    <link rel="apple-touch-icon" href="/portfolio/apple-touch-icon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Syne:wght@600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Syne:wght@600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+  </head>
+  <body>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('portfolio-theme');
+          if (t === 'light' || t === 'dark') {
+            document.documentElement.setAttribute('data-theme', t);
+          } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/auto/main.jsx"></script>
+  </body>
+</html>

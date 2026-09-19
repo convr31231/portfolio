@@ -24,29 +24,34 @@ function buildTelegramUrl(message) {
   }
 }
 
+function resolveTelegramMessage(contextMessage, options = {}) {
+  if (options.message) return options.message
+  if (contextMessage) {
+    return `Здравствуйте! Посмотрел ваше портфолио. Хочу обсудить: ${contextMessage}.`
+  }
+  return DEFAULT_TELEGRAM_MESSAGE
+}
+
 /**
  * Открывает Telegram с готовым текстом сообщения.
- * Если ссылка не задана — плавный скролл к контактам.
+ * Если ссылка не задана — плавный скролл к контактам (или fallbackId).
+ * @param {string} [contextMessage]
+ * @param {{ message?: string, fallbackId?: string }} [options]
  */
-export function openTelegram(contextMessage) {
-  const message = contextMessage
-    ? `Здравствуйте! Посмотрел ваше портфолио. Хочу обсудить: ${contextMessage}.`
-    : DEFAULT_TELEGRAM_MESSAGE
-
+export function openTelegram(contextMessage, options = {}) {
+  const message = resolveTelegramMessage(contextMessage, options)
   const url = buildTelegramUrl(message)
 
   if (!url) {
-    scrollToId('contact')
+    scrollToId(options.fallbackId || 'contact')
     return
   }
 
   window.open(url, '_blank', 'noopener,noreferrer')
 }
 
-export function getTelegramHref(contextMessage) {
-  const message = contextMessage
-    ? `Здравствуйте! Посмотрел ваше портфолио. Хочу обсудить: ${contextMessage}.`
-    : DEFAULT_TELEGRAM_MESSAGE
+export function getTelegramHref(contextMessage, options = {}) {
+  const message = resolveTelegramMessage(contextMessage, options)
   return buildTelegramUrl(message)
 }
 

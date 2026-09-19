@@ -13,7 +13,11 @@ export const SITE_NAME = 'Иван'
  */
 export const SITE_URL = 'https://convr31231.github.io/portfolio'
 
-/** Пример: 'https://t.me/username' */
+/**
+ * TODO: вставьте рабочий Telegram перед публикацией.
+ * Пример: 'https://t.me/username'
+ * Пока пусто — кнопки ведут к блоку контактов / финальному CTA.
+ */
 export const TELEGRAM_URL = ''
 
 /** Пример: 'hello@domain.ru' — пустое значение не показывается на сайте */
