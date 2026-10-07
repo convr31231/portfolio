@@ -1,9 +1,12 @@
 import { site, CONTACT_EMAIL, isConfigured } from '../data/site'
+import { serviceNav } from '../data/services'
+import { appPath } from '../utils/paths'
 import './Footer.css'
 
 export default function Footer() {
   const hasEmail = isConfigured(CONTACT_EMAIL)
   const hasGithub = isConfigured(site.github)
+  const niches = serviceNav()
 
   return (
     <footer className="footer">
@@ -11,6 +14,18 @@ export default function Footer() {
         <div className="footer__brand">
           <p className="footer__logo">{site.name}</p>
           <p className="footer__tagline">Разработка сайтов для малого бизнеса</p>
+        </div>
+
+        <div className="footer__contacts">
+          <p className="footer__heading">Услуги</p>
+          <ul className="footer__list">
+            {niches.map((item) => (
+              <li key={item.slug}>
+                <span>{item.label}</span>
+                <a href={appPath(`/services/${item.slug}/`)}>Страница услуги</a>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="footer__contacts">

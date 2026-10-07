@@ -6,9 +6,15 @@
 
 .footer__inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr 1fr;
   gap: 2rem;
   padding-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+  .footer__inner {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .footer__logo {

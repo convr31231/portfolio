@@ -4,6 +4,7 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SITE_URL, isConfigured, getSiteOrigin } from './src/data/site.js'
+import { servicePages } from './src/data/services.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const BASE = '/portfolio/'
@@ -23,20 +24,34 @@ function seoFilesPlugin() {
 
       writeFileSync(path.join(dist, 'robots.txt'), robots, 'utf8')
 
-      const home = origin ? `${origin}/` : BASE
-      const auto = origin ? `${origin}/auto/` : `${BASE}auto/`
+      const loc = (p) => {
+        if (origin) return `${origin}${p}`
+        return `${BASE}${p.replace(/^\//, '')}`
+      }
+
+      const urls = [
+        { path: '/', changefreq: 'monthly', priority: '1.0' },
+        { path: '/auto/', changefreq: 'monthly', priority: '0.9' },
+        ...servicePages.map((page) => ({
+          path: `/services/${page.slug}/`,
+          changefreq: 'monthly',
+          priority: '0.85',
+        })),
+      ]
+
+      const body = urls
+        .map(
+          (u) => `  <url>
+    <loc>${loc(u.path)}</loc>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`,
+        )
+        .join('\n')
+
       const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${home}</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>${auto}</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
+${body}
 </urlset>
 `
 
@@ -57,6 +72,9 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, 'index.html'),
         auto: path.resolve(__dirname, 'auto/index.html'),
+        servicesAuto: path.resolve(__dirname, 'services/auto/index.html'),
+        servicesBeauty: path.resolve(__dirname, 'services/beauty/index.html'),
+        servicesFlowers: path.resolve(__dirname, 'services/flowers/index.html'),
       },
     },
   },
