@@ -12,14 +12,12 @@ export default function FAQ() {
     <section className="section" id="faq" aria-labelledby="faq-title">
       <div className="container faq__layout" ref={ref}>
         <header className={`section__header reveal ${isVisible ? 'is-visible' : ''}`}>
-          <span className="section__eyebrow">FAQ</span>
+          <span className="section__mark">Вопросы</span>
           <h2 id="faq-title">Частые вопросы</h2>
-          <p>Коротко о стоимости, сроках и старте работы.</p>
+          <p>Коротко о старте работы, оплате сервисов и правках.</p>
         </header>
 
-        <div
-          className={`accordion reveal reveal-delay-1 ${isVisible ? 'is-visible' : ''}`}
-        >
+        <div className={`accordion reveal ${isVisible ? 'is-visible' : ''}`}>
           {faqs.map((item, index) => {
             const isOpen = openIndex === index
             const panelId = `${baseId}-panel-${index}`
@@ -28,7 +26,7 @@ export default function FAQ() {
             return (
               <div
                 key={item.question}
-                className={`accordion__item ${isOpen ? 'accordion__item--open' : ''}`}
+                className={`accordion__item ${isOpen ? 'is-open' : ''}`}
               >
                 <h3>
                   <button
@@ -38,6 +36,22 @@ export default function FAQ() {
                     aria-expanded={isOpen}
                     aria-controls={panelId}
                     onClick={() => setOpenIndex(isOpen ? -1 : index)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowDown') {
+                        e.preventDefault()
+                        document
+                          .getElementById(`${baseId}-button-${(index + 1) % faqs.length}`)
+                          ?.focus()
+                      }
+                      if (e.key === 'ArrowUp') {
+                        e.preventDefault()
+                        document
+                          .getElementById(
+                            `${baseId}-button-${(index - 1 + faqs.length) % faqs.length}`,
+                          )
+                          ?.focus()
+                      }
+                    }}
                   >
                     <span>{item.question}</span>
                     <span className="accordion__icon" aria-hidden="true">

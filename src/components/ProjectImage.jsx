@@ -2,27 +2,34 @@ import { useState } from 'react'
 import { publicUrl } from '../utils/publicUrl'
 import './ProjectImage.css'
 
-/**
- * Превью проекта с object-fit: cover и fallback без сломанной иконки.
- */
 export default function ProjectImage({
   project,
   className = '',
   priority = false,
   decorative = false,
+  variant = 'desktop',
 }) {
   const [failed, setFailed] = useState(false)
   const alt = decorative
     ? ''
     : project.alt || `${project.category} ${project.title}`
 
-  const positionStyle = {
-    '--object-position': project.objectPosition || 'center center',
-    '--object-position-mobile':
-      project.objectPositionMobile || project.objectPosition || 'center top',
-  }
+  const srcPath =
+    variant === 'mobile' && project.imageMobile
+      ? project.imageMobile
+      : variant === 'full' && project.imageFull
+        ? project.imageFull
+        : project.image
 
-  const src = project.image ? publicUrl(project.image) : ''
+  const src = srcPath ? publicUrl(srcPath) : ''
+  const width =
+    variant === 'mobile' ? 390 : project.imageWidth || 1440
+  const height =
+    variant === 'mobile' ? 844 : project.imageHeight || 900
+
+  const positionStyle = {
+    '--object-position': project.objectPosition || 'center top',
+  }
 
   if (failed || !src) {
     return (
@@ -42,8 +49,8 @@ export default function ProjectImage({
       className={`project-image ${className}`}
       src={src}
       alt={alt}
-      width={project.imageWidth || 1200}
-      height={project.imageHeight || 800}
+      width={width}
+      height={height}
       loading={priority ? 'eager' : 'lazy'}
       decoding={priority ? 'sync' : 'async'}
       fetchPriority={priority ? 'high' : 'auto'}

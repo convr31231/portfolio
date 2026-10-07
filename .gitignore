@@ -24,4 +24,7 @@ dist-ssr
 *.sw?
 
 tmp/
+tmp-qa/
+audit-shots/
+scripts/audit-screens.mjs
 public/projects/raw/

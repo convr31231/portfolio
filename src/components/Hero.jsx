@@ -1,41 +1,41 @@
-import { site, projects } from '../data/site'
-import { openTelegram, scrollToId } from '../utils/telegram'
+import { useState } from 'react'
+import { site, projects, SHOWCASE_IDS } from '../data/site'
+import { scrollToId } from '../utils/scroll'
 import { useReveal } from '../hooks/useReveal'
 import ProjectImage from './ProjectImage'
+import ImageLightbox from './ImageLightbox'
 import './Hero.css'
 
 export default function Hero() {
   const { ref, isVisible } = useReveal()
-  const featured = projects.find((p) => p.featured) || projects[0]
-  const side = projects.filter((p) => p.id !== featured.id).slice(0, 2)
+  const featured =
+    projects.find((p) => p.id === SHOWCASE_IDS[0]) || projects[0]
+  const secondary =
+    projects.find((p) => p.id === SHOWCASE_IDS[1]) ||
+    projects.find((p) => p.id !== featured.id)
+  const [lightbox, setLightbox] = useState(null)
+  const [returnFocusEl, setReturnFocusEl] = useState(null)
 
   return (
     <section className="hero" id="top" aria-labelledby="hero-title">
       <div className="container hero__grid" ref={ref}>
         <div className={`hero__content ${isVisible ? 'is-visible' : ''}`}>
-          <div className="status-pill hero__status reveal-item">
-            <span className="status-pill__dot" aria-hidden="true" />
-            {site.status}
-          </div>
-
-          <h1 id="hero-title" className="reveal-item reveal-delay-1">
-            {site.hero.title}
+          <h1 id="hero-title" className="reveal-item">
+            {site.hero.titleLines.map((line) => (
+              <span key={line} className="hero__line">
+                {line}
+              </span>
+            ))}
           </h1>
 
-          <p className="hero__subtitle reveal-item reveal-delay-2">
+          <p className="hero__subtitle reveal-item reveal-delay-1">
             {site.hero.subtitle}
           </p>
 
-          <p className="hero__line reveal-item reveal-delay-2">{site.hero.line}</p>
-
-          <div className="btn-group reveal-item reveal-delay-3">
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={() => openTelegram()}
-            >
-              Обсудить проект
-            </button>
+          <div className="btn-group reveal-item reveal-delay-2">
+            <a className="btn btn--primary" href="#contact">
+              Обсудить сайт
+            </a>
             <button
               type="button"
               className="btn btn--secondary"
@@ -45,56 +45,57 @@ export default function Hero() {
             </button>
           </div>
 
-          <p className="hero__trust reveal-item reveal-delay-3">{site.hero.trust}</p>
+          <div className="hero__meta reveal-item reveal-delay-3">
+            <p className="hero__price">{site.hero.priceLine}</p>
+            <a className="hero__pricing-link" href="#pricing">
+              {site.hero.pricingLink}
+            </a>
+          </div>
         </div>
 
-        <div
-          className={`hero__visual ${isVisible ? 'is-visible' : ''}`}
-          aria-hidden="true"
-        >
-          <div className="hero-stage">
-            <div className="browser-mock">
-              <div className="browser-mock__bar">
-                <span />
-                <span />
-                <span />
-                <div className="browser-mock__url">{featured.title}</div>
-              </div>
-              <div className="browser-mock__body">
-                <ProjectImage project={featured} priority decorative />
-              </div>
-            </div>
+        <div className={`hero__visual ${isVisible ? 'is-visible' : ''}`}>
+          <div className="hero-showcase">
+            <figure className="hero-main">
+              <button
+                type="button"
+                className="hero-main__media"
+                onClick={(e) => {
+                  setReturnFocusEl(e.currentTarget)
+                  setLightbox(featured)
+                }}
+                aria-label={`Увеличить изображение: ${featured.title}`}
+              >
+                <ProjectImage project={featured} priority />
+              </button>
+              <figcaption className="hero-main__cap">
+                <span>{featured.statusLabel}</span>
+                <strong>{featured.title}</strong>
+                <em>{featured.category}</em>
+              </figcaption>
+            </figure>
 
-            <div className="phone-mock">
-              <div className="phone-mock__notch" />
-              <div className="phone-mock__screen">
-                <ProjectImage project={side[0] || featured} decorative />
-              </div>
-            </div>
-
-            {side.slice(0, 1).map((project) => (
-              <div key={project.id} className="hero-card">
-                <div className="hero-card__preview">
-                  <ProjectImage project={project} decorative />
+            {secondary && (
+              <figure className="hero-side">
+                <div className="hero-side__media">
+                  <ProjectImage project={secondary} />
                 </div>
-                <div className="hero-card__meta">
-                  <span>{project.category}</span>
-                  <strong>{project.title}</strong>
-                </div>
-              </div>
-            ))}
-
-            <div className="hero-float">
-              <span className="hero-float__label">UI</span>
-              <span className="hero-float__bars">
-                <i />
-                <i />
-                <i />
-              </span>
-            </div>
+                <figcaption>
+                  <strong>{secondary.title}</strong>
+                  <span>{secondary.category}</span>
+                </figcaption>
+              </figure>
+            )}
           </div>
         </div>
       </div>
+
+      {lightbox && (
+        <ImageLightbox
+          project={lightbox}
+          onClose={() => setLightbox(null)}
+          returnFocusEl={returnFocusEl}
+        />
+      )}
     </section>
   )
 }

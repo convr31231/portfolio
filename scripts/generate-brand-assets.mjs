@@ -20,15 +20,14 @@ function escapeXml(str) {
 }
 
 async function pngToIco(pngBuffer) {
-  // Minimal ICO with embedded PNG (Vista+)
   const header = Buffer.alloc(6)
   header.writeUInt16LE(0, 0)
   header.writeUInt16LE(1, 2)
   header.writeUInt16LE(1, 4)
 
   const entry = Buffer.alloc(16)
-  entry.writeUInt8(32, 0) // width
-  entry.writeUInt8(32, 1) // height
+  entry.writeUInt8(32, 0)
+  entry.writeUInt8(32, 1)
   entry.writeUInt8(0, 2)
   entry.writeUInt8(0, 3)
   entry.writeUInt16LE(1, 4)
@@ -41,24 +40,25 @@ async function pngToIco(pngBuffer) {
 
 async function main() {
   await mkdir(publicDir, { recursive: true })
-  const name = escapeXml(SITE_NAME.toUpperCase())
+  const name = escapeXml(SITE_NAME)
+  const initial = escapeXml(SITE_NAME.slice(0, 1).toUpperCase())
 
   const ogSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#F4F5F7"/>
-  <rect width="1200" height="8" fill="#0E7C7B"/>
-  <rect x="80" y="120" width="72" height="72" rx="18" fill="#0E7C7B"/>
-  <text x="116" y="168" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="34" font-weight="700">${name.slice(0, 1)}</text>
-  <text x="80" y="250" fill="#0E7C7B" font-family="Arial, sans-serif" font-size="22" font-weight="700">[${name}] / WEB DESIGN &amp; DEVELOPMENT</text>
-  <text x="80" y="340" fill="#111318" font-family="Arial, sans-serif" font-size="52" font-weight="700">Создаю современные сайты</text>
-  <text x="80" y="410" fill="#111318" font-family="Arial, sans-serif" font-size="52" font-weight="700">для бизнеса</text>
-  <text x="80" y="500" fill="#6B7280" font-family="Arial, sans-serif" font-size="24">Лендинги · Сайты услуг · Бизнес-сайты · Редизайн</text>
+  <rect width="1200" height="630" fill="#F6F3EE"/>
+  <rect width="1200" height="8" fill="#1A56DB"/>
+  <rect x="80" y="110" width="72" height="72" rx="14" fill="#1A56DB"/>
+  <text x="116" y="158" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="34" font-weight="700">${initial}</text>
+  <text x="80" y="240" fill="#1A56DB" font-family="Arial, sans-serif" font-size="22" font-weight="700">${name} · Разработка сайтов</text>
+  <text x="80" y="330" fill="#1C1F26" font-family="Arial, sans-serif" font-size="48" font-weight="700">Сайты для малого бизнеса</text>
+  <text x="80" y="400" fill="#1C1F26" font-family="Arial, sans-serif" font-size="48" font-weight="700">от 15 000 ₽</text>
+  <text x="80" y="500" fill="#5C6573" font-family="Arial, sans-serif" font-size="24">Компактный сайт · Индивидуальный сайт · Обсуждение в переписке</text>
 </svg>`
 
   const faviconSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#0E7C7B"/>
-  <text x="16" y="22" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">${name.slice(0, 1)}</text>
+  <rect width="32" height="32" rx="8" fill="#1A56DB"/>
+  <text x="16" y="22" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">${initial}</text>
 </svg>`
 
   await writeFile(path.join(publicDir, 'favicon.svg'), faviconSvg)
@@ -81,7 +81,7 @@ async function main() {
   const ico = await pngToIco(icon32)
   await writeFile(path.join(publicDir, 'favicon.ico'), ico)
 
-  console.log('Generated: og-image.webp, favicon.svg, favicon.ico, apple-touch-icon.png')
+  console.log('Brand assets updated in public/')
 }
 
 main().catch((err) => {

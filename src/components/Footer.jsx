@@ -1,53 +1,31 @@
-import { site, TELEGRAM_URL, EMAIL, isConfigured } from '../data/site'
-import { openTelegram, getTelegramHref } from '../utils/telegram'
+import { site, CONTACT_EMAIL, isConfigured } from '../data/site'
 import './Footer.css'
 
 export default function Footer() {
-  const hasTelegram = isConfigured(TELEGRAM_URL)
-  const hasEmail = isConfigured(EMAIL)
+  const hasEmail = isConfigured(CONTACT_EMAIL)
   const hasGithub = isConfigured(site.github)
-  const telegramHref = getTelegramHref()
 
   return (
-    <footer className="footer" id="contact">
+    <footer className="footer">
       <div className="container footer__inner">
         <div className="footer__brand">
-          <p className="footer__logo">[{site.name}]</p>
-          <p className="footer__tagline">Разработка сайтов для бизнеса</p>
-          <button
-            type="button"
-            className="btn btn--primary btn--sm footer__cta"
-            onClick={() => openTelegram()}
-          >
-            Написать в Telegram
-          </button>
+          <p className="footer__logo">{site.name}</p>
+          <p className="footer__tagline">Разработка сайтов для малого бизнеса</p>
         </div>
 
         <div className="footer__contacts">
-          <h2 className="footer__heading">Контакты</h2>
+          <p className="footer__heading">Связь</p>
           <ul className="footer__list">
-            <li>
-              <span>Telegram</span>
-              {hasTelegram && telegramHref ? (
-                <a href={telegramHref} target="_blank" rel="noopener noreferrer">
-                  {formatTelegramLabel(TELEGRAM_URL)}
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  className="footer__text-btn"
-                  onClick={() => openTelegram()}
-                >
-                  Написать в Telegram
-                </button>
-              )}
-            </li>
             {hasEmail && (
               <li>
                 <span>Email</span>
-                <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
               </li>
             )}
+            <li>
+              <span>Заявка</span>
+              <a href="#contact">Форма на сайте</a>
+            </li>
             {hasGithub && (
               <li>
                 <span>GitHub</span>
@@ -67,14 +45,4 @@ export default function Footer() {
       </div>
     </footer>
   )
-}
-
-function formatTelegramLabel(url) {
-  try {
-    const u = new URL(url)
-    const path = u.pathname.replace(/^\//, '')
-    return path ? `@${path}` : u.host
-  } catch {
-    return 'Telegram'
-  }
 }

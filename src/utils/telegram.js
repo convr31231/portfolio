@@ -3,9 +3,16 @@ import {
   DEFAULT_TELEGRAM_MESSAGE,
   isConfigured,
 } from '../data/site'
+import { scrollToId } from './scroll'
+
+export { scrollToId }
+
+export function hasTelegram() {
+  return isConfigured(TELEGRAM_URL)
+}
 
 function buildTelegramUrl(message) {
-  if (!isConfigured(TELEGRAM_URL)) return null
+  if (!hasTelegram()) return null
 
   const base = TELEGRAM_URL.trim().replace(/\/$/, '')
   const text = encodeURIComponent(message || DEFAULT_TELEGRAM_MESSAGE)
@@ -27,16 +34,13 @@ function buildTelegramUrl(message) {
 function resolveTelegramMessage(contextMessage, options = {}) {
   if (options.message) return options.message
   if (contextMessage) {
-    return `Здравствуйте! Посмотрел ваше портфолио. Хочу обсудить: ${contextMessage}.`
+    return `Здравствуйте! Хочу обсудить: ${contextMessage}.`
   }
   return DEFAULT_TELEGRAM_MESSAGE
 }
 
 /**
- * Открывает Telegram с готовым текстом сообщения.
- * Если ссылка не задана — плавный скролл к контактам (или fallbackId).
- * @param {string} [contextMessage]
- * @param {{ message?: string, fallbackId?: string }} [options]
+ * Открывает Telegram или прокручивает к контактам, если URL не задан.
  */
 export function openTelegram(contextMessage, options = {}) {
   const message = resolveTelegramMessage(contextMessage, options)
@@ -55,7 +59,7 @@ export function getTelegramHref(contextMessage, options = {}) {
   return buildTelegramUrl(message)
 }
 
-export function scrollToId(id) {
-  const el = document.getElementById(id)
-  if (el) el.scrollIntoView({ behavior: 'smooth' })
+/** Подпись основной CTA в зависимости от наличия Telegram */
+export function getPrimaryCtaLabel(telegramLabel, contactLabel = 'Перейти к контактам') {
+  return hasTelegram() ? telegramLabel : contactLabel
 }

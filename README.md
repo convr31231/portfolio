@@ -1,15 +1,26 @@
-# Портфолио — разработка сайтов для бизнеса
+# Разработка сайтов для малого бизнеса
+
+Главная страница — услуги и портфолио. Отдельная страница `/auto/` сохранена.
 
 ## Перед deployment заполните в `src/data/site.js`
 
 ```js
 export const SITE_NAME = 'Иван'
-export const SITE_URL = 'https://ваш-домен.ru'   // без слэша в конце
-export const TELEGRAM_URL = 'https://t.me/username'
-export const EMAIL = 'hello@ваш-домен.ru'
+export const SITE_URL = 'https://convr31231.github.io/portfolio'   // без слэша в конце
+export const TELEGRAM_URL = 'https://t.me/username' // обязателен для рабочих кнопок
+export const EMAIL = 'hello@ваш-домен.ru' // необязательно
 ```
 
-Пустые `TELEGRAM_URL` / `EMAIL` на сайте не отображаются.
+Пустой `EMAIL` на сайте не показывается. Без `TELEGRAM_URL`:
+- кнопки подписываются «Перейти к контактам»;
+- закреплённая кнопка Telegram на мобильном скрыта;
+- после указания URL подписи и ссылки переключаются автоматически.
+
+## Портфолио на главной
+
+9 проектов из GitHub Pages: NOVA, Olga Salon, MONO, Fleur, Артишок, Кеми Фло, Variator, FORM Coffee, Photo Studio.
+
+Превью: `npm run capture:previews` → `public/projects/*.{webp,-full.webp,-mobile.webp}`.
 
 ## Production build
 

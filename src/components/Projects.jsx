@@ -1,75 +1,192 @@
-import { projects } from '../data/site'
+import { useMemo, useRef, useState } from 'react'
+import { projects, projectFilters, SHOWCASE_IDS } from '../data/site'
 import { useReveal } from '../hooks/useReveal'
 import ProjectImage from './ProjectImage'
+import ImageLightbox from './ImageLightbox'
 import './Projects.css'
 
 export default function Projects() {
   const { ref, isVisible } = useReveal()
+  const [filter, setFilter] = useState('all')
+  const [expanded, setExpanded] = useState(false)
+  const [lightbox, setLightbox] = useState(null)
+  const [returnFocusEl, setReturnFocusEl] = useState(null)
+  const toggleRef = useRef(null)
+
+  const activeFilters = useMemo(() => {
+    const present = new Set(projects.map((p) => p.filter))
+    return projectFilters.filter((f) => f.id === 'all' || present.has(f.id))
+  }, [])
+
+  const filtered = useMemo(() => {
+    if (filter === 'all') return projects
+    return projects.filter((p) => p.filter === filter)
+  }, [filter])
+
+  const showcase = useMemo(
+    () => SHOWCASE_IDS.map((id) => projects.find((p) => p.id === id)).filter(Boolean),
+    [],
+  )
+
+  const isAll = filter === 'all'
+  const spotlight = isAll ? showcase[0] : filtered[0]
+  const secondary = isAll
+    ? showcase.slice(1)
+    : filtered.slice(1)
+  const extra = isAll
+    ? projects.filter((p) => !SHOWCASE_IDS.includes(p.id))
+    : []
+  const showExtras = isAll && expanded
+  const hiddenCount = extra.length
+
+  const openZoom = (project, el) => {
+    setReturnFocusEl(el)
+    setLightbox(project)
+  }
+
+  const onFilter = (id) => {
+    setFilter(id)
+    if (id === 'all') setExpanded(false)
+  }
+
+  const onToggleExtra = () => {
+    if (expanded) {
+      setExpanded(false)
+      requestAnimationFrame(() => {
+        toggleRef.current?.focus({ preventScroll: true })
+        toggleRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
+    } else {
+      setExpanded(true)
+    }
+  }
 
   return (
     <section className="section" id="works" aria-labelledby="works-title">
       <div className="container" ref={ref}>
         <header className={`section__header reveal ${isVisible ? 'is-visible' : ''}`}>
-          <span className="section__eyebrow">Портфолио</span>
-          <h2 id="works-title">Избранные проекты</h2>
+          <span className="section__mark">Работы</span>
+          <h2 id="works-title">Разные бизнесы. Разные решения.</h2>
           <p>
-            Концепты сайтов для разных сфер бизнеса — подход к дизайну, структуре и
-            пользовательскому опыту.
-          </p>
-          <p className="projects__note">
-            Демонстрационные концепты, созданные для разных сфер бизнеса.
+            Примеры сайтов и шаблонов: от компактной страницы услуг до подробной
+            презентации бизнеса.
           </p>
         </header>
 
-        <div className={`projects-list reveal ${isVisible ? 'is-visible' : ''}`}>
-          {projects.map((project, index) => (
-            <article
-              key={project.id}
-              className={`project-case ${project.featured ? 'project-case--featured' : ''}`}
+        {activeFilters.length > 2 && (
+          <div
+            className={`project-filters reveal ${isVisible ? 'is-visible' : ''}`}
+            role="group"
+            aria-label="Фильтр работ"
+          >
+            {activeFilters.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`project-filters__btn ${filter === item.id ? 'is-active' : ''}`}
+                aria-pressed={filter === item.id}
+                onClick={() => onFilter(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {spotlight && (
+          <div className={`projects-showcase reveal ${isVisible ? 'is-visible' : ''}`}>
+            <ProjectCard
+              project={spotlight}
+              large
+              priority
+              onZoom={openZoom}
+            />
+          </div>
+        )}
+
+        {secondary.length > 0 && (
+          <div className={`projects-grid reveal ${isVisible ? 'is-visible' : ''}`}>
+            {secondary.map((project) => (
+              <ProjectCard key={project.id} project={project} onZoom={openZoom} />
+            ))}
+          </div>
+        )}
+
+        {showExtras && (
+          <div className="projects-grid projects-grid--extra">
+            {extra.map((project) => (
+              <ProjectCard key={project.id} project={project} onZoom={openZoom} />
+            ))}
+          </div>
+        )}
+
+        {isAll && hiddenCount > 0 && (
+          <div className="projects-more">
+            <button
+              ref={toggleRef}
+              type="button"
+              className="btn btn--secondary"
+              onClick={onToggleExtra}
+              aria-expanded={expanded}
             >
-              <div className="project-case__media">
-                <ProjectImage
-                  project={project}
-                  className="project-case__img"
-                  priority={index === 0}
-                />
-              </div>
+              {expanded
+                ? 'Свернуть дополнительные работы'
+                : `Показать ещё ${hiddenCount} работ`}
+            </button>
+          </div>
+        )}
+      </div>
 
-              <div className="project-case__body">
-                <span className="project-case__category">{project.category}</span>
-                <h3>{project.title}</h3>
-                <p>{project.description}</p>
+      {lightbox && (
+        <ImageLightbox
+          project={lightbox}
+          onClose={() => setLightbox(null)}
+          returnFocusEl={returnFocusEl}
+        />
+      )}
+    </section>
+  )
+}
 
-                <ul className="project-case__features">
-                  {project.features.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
+function ProjectCard({ project, large = false, priority = false, onZoom }) {
+  return (
+    <article className={`project-card ${large ? 'project-card--large' : ''}`}>
+      <button
+        type="button"
+        className="project-card__media"
+        aria-label={`Увеличить изображение: ${project.title}`}
+        onClick={(e) => onZoom(project, e.currentTarget)}
+      >
+        <ProjectImage project={project} priority={priority} className="project-card__img" />
+      </button>
 
-                <div className="tag-list">
-                  {project.tags.map((tag) => (
-                    <span key={tag} className="tag">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+      <div className="project-card__body">
+        <p className="project-card__status">{project.statusLabel}</p>
+        <h3>{project.title}</h3>
+        <p className="project-card__category">{project.category}</p>
+        <p className="project-card__summary">{project.summary}</p>
 
-                <div className="project-case__actions">
-                  <a
-                    href={project.url}
-                    className="btn btn--primary project-case__link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Открыть сайт
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                </div>
-              </div>
-            </article>
-          ))}
+        <div className="project-card__actions">
+          {project.url ? (
+            <a
+              href={project.url}
+              className="btn btn--primary btn--sm"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Посмотреть сайт
+              <span aria-hidden="true">↗</span>
+            </a>
+          ) : null}
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            onClick={(e) => onZoom(project, e.currentTarget)}
+          >
+            Увеличить
+          </button>
         </div>
       </div>
-    </section>
+    </article>
   )
 }
