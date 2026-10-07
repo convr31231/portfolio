@@ -1,19 +1,27 @@
+import { useState } from 'react'
 import {
   getServicePage,
   getServiceProjects,
-  serviceCanonical,
+  servicePageUrl,
   serviceNav,
   CONTACT_EMAIL,
   SITE_NAME,
+  pricing,
+  pricingNote,
+  pricingExtra,
 } from '../data/services'
-import { pricing, isConfigured } from '../data/site'
-import { appPath, homeHash } from '../utils/paths'
-import { useReveal } from '../hooks/useReveal'
+import { isConfigured } from '../data/site'
+import { appPath } from '../utils/paths'
 import ProjectImage from '../components/ProjectImage'
+import ContactForm from '../components/ContactForm'
 import './service.css'
 
 export default function ServiceApp({ slug }) {
   const page = getServicePage(slug)
+  const [packagePrefill, setPackagePrefill] = useState('')
+  const [prefillNonce, setPrefillNonce] = useState(0)
+  const [menuOpen, setMenuOpen] = useState(false)
+
   if (!page) {
     return (
       <main className="service-page">
@@ -28,8 +36,15 @@ export default function ServiceApp({ slug }) {
   }
 
   const examples = getServiceProjects(page)
-  const canonical = serviceCanonical(slug)
+  const pageUrl = servicePageUrl(slug)
   const nav = serviceNav()
+
+  const selectPackage = (formValue) => {
+    setPackagePrefill(formValue)
+    setPrefillNonce((n) => n + 1)
+    const el = document.getElementById('contact')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const schema = {
     '@context': 'https://schema.org',
@@ -41,21 +56,14 @@ export default function ServiceApp({ slug }) {
       name: SITE_NAME,
     },
     areaServed: 'RU',
-    url: canonical,
-    offers: [
-      {
-        '@type': 'Offer',
-        name: 'Компактный сайт',
-        price: '15000',
-        priceCurrency: 'RUB',
-      },
-      {
-        '@type': 'Offer',
-        name: 'Индивидуальный сайт',
-        price: '30000',
-        priceCurrency: 'RUB',
-      },
-    ],
+    url: pageUrl,
+    offers: pricing.map((item) => ({
+      '@type': 'Offer',
+      name: item.title,
+      price: item.id === 'compact' ? '15000' : '30000',
+      priceCurrency: 'RUB',
+      description: item.difference,
+    })),
   }
 
   return (
@@ -67,24 +75,36 @@ export default function ServiceApp({ slug }) {
       <a className="skip-link" href="#content">
         Перейти к содержимому
       </a>
-      <ServiceHeader nav={nav} current={slug} />
+      <ServiceHeader
+        nav={nav}
+        current={slug}
+        menuOpen={menuOpen}
+        onToggleMenu={() => setMenuOpen((v) => !v)}
+        onCloseMenu={() => setMenuOpen(false)}
+      />
       <main id="content">
         <ServiceHero page={page} />
         <ServiceIncludes page={page} />
         <ServiceExamples examples={examples} />
-        <ServicePricing />
-        <ServiceCta />
+        <ServicePricing page={page} onSelectPackage={selectPackage} />
+        <ServiceFaq faqs={page.faqs} />
+        <ServiceContact
+          page={page}
+          pageUrl={pageUrl}
+          packagePrefill={packagePrefill}
+          prefillNonce={prefillNonce}
+        />
       </main>
       <ServiceFooter nav={nav} />
     </div>
   )
 }
 
-function ServiceHeader({ nav, current }) {
+function ServiceHeader({ nav, current, menuOpen, onToggleMenu, onCloseMenu }) {
   return (
-    <header className="service-header">
+    <header className={`service-header ${menuOpen ? 'is-open' : ''}`}>
       <div className="container service-header__inner">
-        <a href={appPath('/')} className="service-header__logo">
+        <a href={appPath('/')} className="service-header__logo" onClick={onCloseMenu}>
           <span>{SITE_NAME}</span>
           <span aria-hidden="true">·</span>
           <span>Разработка сайтов</span>
@@ -105,30 +125,61 @@ function ServiceHeader({ nav, current }) {
             </a>
           ))}
         </nav>
-        <a className="btn btn--primary btn--sm" href={homeHash('#contact')}>
+        <a className="btn btn--primary btn--sm service-header__cta" href="#contact">
           Обсудить сайт
         </a>
+        <button
+          type="button"
+          className={`service-burger ${menuOpen ? 'is-open' : ''}`}
+          aria-expanded={menuOpen}
+          aria-controls="service-mobile-nav"
+          aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
+          onClick={onToggleMenu}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
+      <div
+        id="service-mobile-nav"
+        className={`service-mobile ${menuOpen ? 'is-open' : ''}`}
+        hidden={!menuOpen}
+      >
+        <nav aria-label="Мобильная навигация">
+          <a href={appPath('/')} onClick={onCloseMenu}>
+            На главную
+          </a>
+          {nav.map((item) => (
+            <a
+              key={item.slug}
+              href={appPath(`/services/${item.slug}/`)}
+              onClick={onCloseMenu}
+            >
+              {item.label}
+            </a>
+          ))}
+          <a href="#contact" onClick={onCloseMenu}>
+            Оставить заявку
+          </a>
+        </nav>
       </div>
     </header>
   )
 }
 
 function ServiceHero({ page }) {
-  const { ref, isVisible } = useReveal()
   return (
     <section className="service-hero" aria-labelledby="service-title">
-      <div
-        className={`container service-hero__inner reveal ${isVisible ? 'is-visible' : ''}`}
-        ref={ref}
-      >
+      <div className="container service-hero__inner">
         <p className="section__mark">Услуга</p>
         <h1 id="service-title">{page.h1}</h1>
         <p className="service-hero__lead">{page.lead}</p>
         <div className="btn-group">
-          <a className="btn btn--primary" href={homeHash('#contact')}>
+          <a className="btn btn--primary" href="#contact">
             Оставить заявку
           </a>
-          <a className="btn btn--secondary" href={homeHash('#pricing')}>
+          <a className="btn btn--secondary" href="#pricing">
             Смотреть стоимость
           </a>
         </div>
@@ -144,11 +195,10 @@ function ServiceHero({ page }) {
 }
 
 function ServiceIncludes({ page }) {
-  const { ref, isVisible } = useReveal()
   return (
     <section className="section section--muted" aria-labelledby="includes-title">
-      <div className="container" ref={ref}>
-        <div className={`service-split reveal ${isVisible ? 'is-visible' : ''}`}>
+      <div className="container">
+        <div className="service-split">
           <div>
             <h2 id="includes-title">Кому подходит</h2>
             <ul className="service-list">
@@ -158,7 +208,7 @@ function ServiceIncludes({ page }) {
             </ul>
           </div>
           <div>
-            <h2>Что обычно входит</h2>
+            <h2>Что обычно входит в сайт</h2>
             <ul className="service-list">
               {page.includes.map((item) => (
                 <li key={item}>{item}</li>
@@ -172,18 +222,17 @@ function ServiceIncludes({ page }) {
 }
 
 function ServiceExamples({ examples }) {
-  const { ref, isVisible } = useReveal()
   if (!examples.length) return null
 
   return (
     <section className="section" aria-labelledby="examples-title">
-      <div className="container" ref={ref}>
-        <header className={`section__header reveal ${isVisible ? 'is-visible' : ''}`}>
+      <div className="container">
+        <header className="section__header">
           <span className="section__mark">Примеры</span>
           <h2 id="examples-title">Работы и шаблоны по теме</h2>
           <p>Реальные демо и примеры — чтобы оценить подачу до обсуждения задачи.</p>
         </header>
-        <div className={`service-examples reveal ${isVisible ? 'is-visible' : ''}`}>
+        <div className="service-examples">
           {examples.map((project) => (
             <article key={project.id} className="service-example">
               <div className="service-example__media">
@@ -210,26 +259,67 @@ function ServiceExamples({ examples }) {
   )
 }
 
-function ServicePricing() {
-  const { ref, isVisible } = useReveal()
+function ServicePricing({ page, onSelectPackage }) {
   return (
-    <section className="section section--muted" aria-labelledby="price-title">
-      <div className="container" ref={ref}>
-        <header className={`section__header reveal ${isVisible ? 'is-visible' : ''}`}>
+    <section className="section section--muted" id="pricing" aria-labelledby="price-title">
+      <div className="container">
+        <header className="section__header">
           <span className="section__mark">Стоимость</span>
           <h2 id="price-title">Два понятных формата</h2>
-          <p>Состав и цену согласуем до начала разработки.</p>
+          <p>{page.pricingIntro}</p>
         </header>
-        <div className={`service-price-grid reveal ${isVisible ? 'is-visible' : ''}`}>
+        <div className="service-price-grid">
           {pricing.map((item) => (
             <article key={item.id} className="service-price">
               <h3>{item.title}</h3>
               <p className="service-price__value">{item.price}</p>
-              <p>{item.difference}</p>
-              <a className="btn btn--primary" href={homeHash('#contact')}>
+              <p className="service-price__diff">{item.difference}</p>
+              <p className="service-price__desc">{item.description}</p>
+              <p className="service-price__label">Базовый состав</p>
+              <ul>
+                {item.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => onSelectPackage(item.formValue)}
+              >
                 {item.ctaLabel}
-              </a>
+              </button>
             </article>
+          ))}
+        </div>
+        <div className="service-price-notes">
+          <p>{pricingNote}</p>
+          <p>{pricingExtra}</p>
+          <p>
+            Корзина, онлайн-оплата, CRM, CMS и запись через сторонний сервис не входят в
+            базовую цену указанных пакетов и обсуждаются отдельно, если нужны для проекта.
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ServiceFaq({ faqs }) {
+  if (!faqs?.length) return null
+  return (
+    <section className="section" id="faq" aria-labelledby="faq-title">
+      <div className="container">
+        <header className="section__header">
+          <span className="section__mark">Вопросы</span>
+          <h2 id="faq-title">Частые вопросы</h2>
+          <p>Ответы по формату работы и тому, что входит в базовые пакеты.</p>
+        </header>
+        <div className="service-faq">
+          {faqs.map((item) => (
+            <details key={item.q} className="service-faq__item">
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
           ))}
         </div>
       </div>
@@ -237,29 +327,34 @@ function ServicePricing() {
   )
 }
 
-function ServiceCta() {
-  const { ref, isVisible } = useReveal()
+function ServiceContact({ page, pageUrl, packagePrefill, prefillNonce }) {
   const hasEmail = isConfigured(CONTACT_EMAIL)
   return (
-    <section className="service-cta" aria-labelledby="cta-title">
-      <div
-        className={`container service-cta__inner reveal ${isVisible ? 'is-visible' : ''}`}
-        ref={ref}
-      >
+    <section className="service-cta" id="contact" aria-labelledby="cta-title">
+      <div className="container service-cta__inner">
         <h2 id="cta-title">Обсудим сайт под вашу задачу</h2>
         <p>
-          Расскажите о бизнесе — предложу структуру и сориентирую по стоимости.
-          Можно начать с заявки на главной.
+          Расскажите о бизнесе и задаче — предложу структуру и сориентирую по стоимости.
+          Заявку можно отправить прямо на этой странице.
         </p>
-        <a className="btn btn--light" href={homeHash('#contact')}>
-          Перейти к форме заявки
-        </a>
+        <ContactForm
+          packagePrefill={packagePrefill}
+          prefillNonce={prefillNonce}
+          serviceContext={{
+            pageTitle: page.h1,
+            pageUrl,
+          }}
+          submitClassName="btn btn--light contact-form__submit"
+        />
         {hasEmail ? (
           <p className="service-cta__mail">
             Или напишите напрямую:{' '}
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           </p>
         ) : null}
+        <p className="service-cta__home">
+          <a href={appPath('/')}>Перейти на главную</a>
+        </p>
       </div>
     </section>
   )

@@ -60,7 +60,7 @@ function validate(fields) {
   return errors
 }
 
-function buildPayload(fields) {
+function buildPayload(fields, serviceContext) {
   const methodLabel =
     contactMethods.find((m) => m.value === fields.contactMethod)?.label ||
     fields.contactMethod
@@ -74,6 +74,14 @@ function buildPayload(fields) {
     'Способ связи': methodLabel,
     'Формат сайта': fields.siteFormat,
     'Описание задачи': fields.task.trim(),
+  }
+
+  if (serviceContext?.pageTitle) {
+    payload['Страница услуги'] = serviceContext.pageTitle
+  }
+
+  if (serviceContext?.pageUrl) {
+    payload['URL страницы'] = String(serviceContext.pageUrl).split('?')[0]
   }
 
   if (fields.email.trim()) {
@@ -104,7 +112,12 @@ function isFormSubmitSuccess(response, data) {
   return false
 }
 
-export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
+export default function ContactForm({
+  packagePrefill = '',
+  prefillNonce = 0,
+  serviceContext = null,
+  submitClassName = 'btn btn--light contact-form__submit',
+}) {
   const formId = useId()
   const [fields, setFields] = useState(INITIAL)
   const [errors, setErrors] = useState({})
@@ -187,7 +200,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify(buildPayload(fields)),
+        body: JSON.stringify(buildPayload(fields, serviceContext)),
       })
 
       let data = null
@@ -424,11 +437,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
         </p>
       )}
 
-      <button
-        type="submit"
-        className="btn btn--light contact-form__submit"
-        disabled={disabled}
-      >
+      <button type="submit" className={submitClassName} disabled={disabled}>
         {status === 'submitting' ? 'Отправка…' : 'Отправить заявку'}
       </button>
     </form>

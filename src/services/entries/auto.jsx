@@ -1,10 +1,8 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { hydrateRoot } from 'react-dom/client'
 import '../../styles/global.css'
 import ServiceApp from '../ServiceApp.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ServiceApp slug="auto" />
-  </StrictMode>,
-)
+const root = document.getElementById('root')
+if (root) {
+  hydrateRoot(root, <ServiceApp slug="auto" />)
+}
