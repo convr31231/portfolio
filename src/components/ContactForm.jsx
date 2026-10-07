@@ -1,10 +1,11 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import {
   FORMSUBMIT_AJAX_URL,
   FORM_SUBJECT,
   formFormats,
   contactMethods,
 } from '../data/site'
+import { reachGoal } from '../utils/metrika'
 import './ContactForm.css'
 
 const INITIAL = {
@@ -110,6 +111,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
   const [status, setStatus] = useState('idle') // idle | submitting | success | error
   const [serverMessage, setServerMessage] = useState('')
   const [appliedNonce, setAppliedNonce] = useState(0)
+  const formStartSent = useRef(false)
 
   // Подстановка пакета из тарифов без сброса остальных полей
   if (prefillNonce !== appliedNonce && packagePrefill) {
@@ -123,8 +125,25 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
 
   const disabled = status === 'submitting' || status === 'success'
 
+  const trackFormStart = () => {
+    if (formStartSent.current) return
+    formStartSent.current = true
+    reachGoal('lead_form_start')
+  }
+
+  const onFormInteractCapture = (e) => {
+    const el = e.target
+    if (!el || el.name === 'honey') return
+    if (el.matches?.('input, select, textarea')) {
+      trackFormStart()
+    }
+  }
+
   const onChange = (e) => {
     const { name, value } = e.target
+    if (name && name !== 'honey') {
+      trackFormStart()
+    }
     setFields((prev) => ({ ...prev, [name]: value }))
     setErrors((prev) => {
       if (!prev[name]) return prev
@@ -143,6 +162,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
     if (status === 'submitting' || status === 'success') return
 
     // Honeypot: боты заполняют скрытое поле — не отправляем, имитируем успех для бота
+    // Цель lead_submit_success здесь не вызываем
     if (fields.honey) {
       setStatus('success')
       return
@@ -183,12 +203,16 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
         }
       }
 
+      // Активация FormSubmit / ошибки: success=false — цель не вызываем
       if (!isFormSubmitSuccess(response, data)) {
         throw new Error(
           (data && (data.message || data.error)) ||
             'Сервис не подтвердил приём заявки. Попробуйте ещё раз.',
         )
       }
+
+      // Только после подтверждённого успеха FormSubmit (не при активации/ошибке)
+      reachGoal('lead_submit_success')
 
       setStatus('success')
       setServerMessage(
@@ -225,6 +249,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
     <form
       className="contact-form"
       onSubmit={onSubmit}
+      onFocusCapture={onFormInteractCapture}
       noValidate
       aria-describedby={status === 'error' ? `${formId}-server` : undefined}
     >
@@ -234,7 +259,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
         name="honey"
         value={fields.honey}
         onChange={onChange}
-        className="contact-form__honey"
+        className="contact-form__honey ym-disable-keys"
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
@@ -247,6 +272,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
           name="name"
           type="text"
           autoComplete="name"
+          className="ym-disable-keys"
           value={fields.name}
           onChange={onChange}
           disabled={disabled}
@@ -299,6 +325,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
             type="email"
             autoComplete="email"
             inputMode="email"
+            className="ym-disable-keys"
             value={fields.email}
             onChange={onChange}
             disabled={disabled}
@@ -328,6 +355,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
             type="tel"
             autoComplete="tel"
             inputMode="tel"
+            className="ym-disable-keys"
             value={fields.phone}
             onChange={onChange}
             disabled={disabled}
@@ -375,6 +403,7 @@ export default function ContactForm({ packagePrefill = '', prefillNonce = 0 }) {
           id={`${formId}-task`}
           name="task"
           rows={4}
+          className="ym-disable-keys"
           value={fields.task}
           onChange={onChange}
           disabled={disabled}
